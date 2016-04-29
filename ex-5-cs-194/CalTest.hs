@@ -30,6 +30,13 @@ main = hspec $ do
       it "does multiplication" $ do
         property $ \x y -> evalStr (show x <> "*" <> show y) == Just (x * y)
       it "adds and then multiplies" $ do
-        property $ \x y z ->
-          evalStr ("(" <> show x <> "+" <> show y <> ")" <> "*" <> show z) ==
-          Just ((x + y) * z)
+        property $ \x y z -> evalStr ("(" <> show x <> "+" <> show y <> ")" <> "*" <> show z)
+                             == Just ((x + y) * z)
+
+    describe "Expr" $ do
+      it "passes the the spec mentioned in the exercise" $ do
+        (mul (add (lit 2) (lit 3)) (lit 4)) `shouldBe`
+          Mul (Add (Lit 2) (Lit 3)) (Lit 4)
+      it "has an instance of ExprT" $ do
+        property $ \x y z -> (mul (add (lit x) (lit y)) (lit z)) ==
+                             Mul (Add (Lit x) (Lit y)) (Lit z)
