@@ -2,14 +2,15 @@ module Cal where
 
 import ExprT
 import Parser
+import qualified Data.Map as M
 
 eval :: ExprT -> Integer
-eval (Lit a)   = a
-eval (Add a b) = eval a + eval b
-eval (Mul a b) = eval a * eval b
+eval (ExprT.Lit a)   = a
+eval (ExprT.Add a b) = eval a + eval b
+eval (ExprT.Mul a b) = eval a * eval b
 
 evalStr :: String -> Maybe Integer
-evalStr s  = fmap eval $ parseExp Lit Add Mul s
+evalStr s  = fmap eval $ parseExp ExprT.Lit ExprT.Add ExprT.Mul s
 
 class Expr a where
   lit :: Integer -> a
@@ -17,9 +18,9 @@ class Expr a where
   mul :: a -> a -> a
 
 instance Expr ExprT where
-    lit = Lit
-    add = Add
-    mul = Mul
+    lit = ExprT.Lit
+    add = ExprT.Add
+    mul = ExprT.Mul
 
 instance Expr Integer where
   lit = id
@@ -43,3 +44,20 @@ instance Expr Mod7 where
   lit n                 = Mod7 $ n `mod` 7
   add (Mod7 a) (Mod7 b) = lit $ a + b
   mul (Mod7 a) (Mod7 b) = lit $ a * b
+
+class HasVars a where
+  var :: String -> a
+
+data VarExprT = Var String
+              | Lit Integer
+              | Add VarExprT VarExprT
+              | Mul VarExprT VarExprT
+              deriving (Show, Eq)
+
+instance Expr VarExprT where
+ lit = Cal.Lit
+ add = Cal.Add
+ mul = Cal.Mul
+
+instance HasVars VarExprT where
+ var = Var
