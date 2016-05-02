@@ -1,44 +1,54 @@
-module Set1 where
+module Set1 ( mkSeed
+            , fiveRands
+            , randEven
+            , randOdd
+            , randTen
+            , randPair
+            , randPair'
+            , generalPair
+            , repRandom
+            , randString3
+            , randLetter) where
 
 import Data.Monoid
-import qualified MCPrelude  as M
+import MCPrelude
 
 fiveRands :: [Integer]
-fiveRands = getList $ mkRand [M.rand $ M.mkSeed 1] 5
+fiveRands = getList $ mkRand [rand $ mkSeed 1] 5
 
-mkRand :: [(Integer, M.Seed)] -> Int -> [(Integer, M.Seed)]
+mkRand :: [(Integer, Seed)] -> Int -> [(Integer, Seed)]
 mkRand [] _             = []
 mkRand n@((_, s) : _) x = if length n == x
                           then n
-                          else mkRand ([M.rand s] <> n) x
+                          else mkRand ([rand s] <> n) x
 
 
 getList :: [(x,y)] -> [x]
 getList [] = []
 getList ((x,_):xs) = getList xs <> [x]
 
-randLetter :: M.Seed -> (Char, M.Seed)
-randLetter s = convertLetter $ M.rand s
+randLetter :: Seed -> (Char, Seed)
+randLetter s = convertLetter $ rand s
   where
-    convertLetter (x, y) = (M.toLetter x, y)
+    convertLetter (x, y) = (toLetter x, y)
 
-mkRandLetter :: [(Char, M.Seed)] -> Int -> [(Char, M.Seed)]
+mkRandLetter :: [(Char, Seed)] -> Int -> [(Char, Seed)]
 mkRandLetter [] _              = []
 mkRandLetter n@((_, s) : _) x = if length n == x
                           then n
                           else mkRandLetter ([randLetter s] <> n) x
 
 randString3 :: String
-randString3 = getList $ mkRandLetter [randLetter $ M.mkSeed 1] 3
+randString3 = getList $ mkRandLetter [randLetter $ mkSeed 1] 3
 
-type Gen a = M.Seed -> (a, M.Seed)
+type Gen a = Seed -> (a, Seed)
 
 generalA :: (a -> b) -> Gen a -> Gen b
 generalA f g seed = (f $ fst r, snd r)
   where r = g seed
 
 genRand :: Gen Integer
-genRand = M.rand
+genRand = rand
 
 genRandLetter :: Gen Char
 genRandLetter = randLetter
@@ -65,3 +75,13 @@ generalPair g1 g2 s = ((x, y), s2)
 
 randPair' :: Gen (Char, Integer)
 randPair' = generalPair randLetter genRand
+
+repRandom :: [Gen a] -> Gen [a]
+repRandom [] s     = ([], s)
+repRandom (g:gs) s = (x:xs, ss)
+    where (x, s1)  = g s
+          (xs, ss) = repRandom gs s1
+
+genTwo :: Gen a -> (a -> Gen b) -> Gen b
+genTwo g f s  = f x s1
+  where (x, s1) = g s
