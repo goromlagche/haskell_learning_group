@@ -51,3 +51,17 @@ randOdd = generalA ((1+) . (2*)) genRand
 
 randTen :: Gen Integer -- the output of rand * 10
 randTen = generalA (10*) genRand
+
+randPair   :: Gen (Char, Integer)
+randPair s = ((fst rl, fst ri), snd ri)
+  where
+    rl = randLetter s
+    ri = genRand $ snd rl
+
+generalPair :: Gen a -> Gen b -> Gen (a, b)
+generalPair g1 g2 s = ((x, y), s2)
+    where (x, s1) = g1 s
+          (y, s2) = g2 s1
+
+randPair' :: Gen (Char, Integer)
+randPair' = generalPair randLetter genRand

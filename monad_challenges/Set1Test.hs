@@ -13,3 +13,9 @@ main = hspec $ do
     it "passes the the spec mentioned in the exercise" $ do
       product[(fst $ randEven $ mkSeed 1), (fst $ randOdd $ mkSeed 1), (fst $ randTen $ mkSeed 1)]
       `shouldBe` 189908109902700
+  describe "randPair" $ do
+    it "passes the the spec mentioned in the exercise" $ do
+      fst(randPair $ mkSeed 1) `shouldBe` ('l',282475249)
+  describe "genralPair" $ do
+    it "passes the the spec mentioned in the exercise" $ do
+      randPair'(mkSeed 1) `shouldBe` randPair(mkSeed 1)
