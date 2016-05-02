@@ -1,41 +1,53 @@
 module Set1 where
 
 import Data.Monoid
-import MCPrelude
+import qualified MCPrelude  as M
 
 fiveRands :: [Integer]
-fiveRands = getList $ mkRand [rand $ mkSeed 1] 5
+fiveRands = getList $ mkRand [M.rand $ M.mkSeed 1] 5
 
-mkRand :: [(Integer, Seed)] -> Int -> [(Integer, Seed)]
+mkRand :: [(Integer, M.Seed)] -> Int -> [(Integer, M.Seed)]
 mkRand [] _             = []
 mkRand n@((_, s) : _) x = if length n == x
                           then n
-                          else mkRand ([rand s] <> n) x
+                          else mkRand ([M.rand s] <> n) x
 
 
 getList :: [(x,y)] -> [x]
 getList [] = []
 getList ((x,_):xs) = getList xs <> [x]
 
-randLetter :: Seed -> (Char, Seed)
-randLetter s = convertLetter $ rand s
+randLetter :: M.Seed -> (Char, M.Seed)
+randLetter s = convertLetter $ M.rand s
   where
-    convertLetter (x, y) = (toLetter x, y)
+    convertLetter (x, y) = (M.toLetter x, y)
 
-mkRandLetter :: [(Char, Seed)] -> Int -> [(Char, Seed)]
+mkRandLetter :: [(Char, M.Seed)] -> Int -> [(Char, M.Seed)]
 mkRandLetter [] _              = []
 mkRandLetter n@((_, s) : _) x = if length n == x
                           then n
                           else mkRandLetter ([randLetter s] <> n) x
 
 randString3 :: String
-randString3 = getList $ mkRandLetter [randLetter $ mkSeed 1] 3
+randString3 = getList $ mkRandLetter [randLetter $ M.mkSeed 1] 3
 
--- -- Tests
--- import Test.Hspec
+type Gen a = M.Seed -> (a, M.Seed)
 
--- main :: IO()
--- main = hspec $ do
---   describe "fiveRands" $ do
---     it "passes the the spec mentioned in the exercise" $ do
---       product(fiveRands) `shouldBe` 8681089573064486461641871805074254223660
+generalA :: (a -> b) -> Gen a -> Gen b
+generalA f g seed = (f $ fst r, snd r)
+  where r = g seed
+
+genRand :: Gen Integer
+genRand = M.rand
+
+genRandLetter :: Gen Char
+genRandLetter = randLetter
+
+randEven :: Gen Integer -- the output of rand * 2
+randEven = generalA (2*) genRand
+
+randOdd :: Gen Integer -- the output of rand * 2 + 1
+randOdd = generalA ((1+) . (2*)) genRand
+
+randTen :: Gen Integer -- the output of rand * 10
+randTen = generalA (10*) genRand
