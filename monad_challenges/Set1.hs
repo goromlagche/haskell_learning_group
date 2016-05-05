@@ -85,3 +85,6 @@ repRandom (g:gs) s = (x:xs, ss)
 genTwo :: Gen a -> (a -> Gen b) -> Gen b
 genTwo g f s  = f x s1
   where (x, s1) = g s
+
+mkGen :: a -> Gen a
+mkGen a s = (a, s)
