@@ -1,4 +1,7 @@
 module Set2 (mkSeed
+            , queryGreek
+            , greekDataA
+            , greekDataB
             , MyMaybe(..)
             , headMay
             , tailMay
@@ -42,3 +45,14 @@ maximumMay n  = MyJust (maximum n)
 minimumMay :: Ord a => [a] -> MyMaybe a
 minimumMay [] = MyNothing
 minimumMay n  = MyJust (minimum n)
+
+queryGreek :: GreekData -> String -> MyMaybe Double
+queryGreek d s = case lookupMay s d of
+  MyNothing -> MyNothing
+  MyJust xs -> case headMay xs of
+      MyNothing -> MyNothing
+      MyJust h  -> case tailMay xs of
+          MyNothing -> MyNothing
+          MyJust t  -> case maximumMay t of
+              MyNothing -> MyNothing
+              MyJust m  -> divMay (fromIntegral m) (fromIntegral h)
