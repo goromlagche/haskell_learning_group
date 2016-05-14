@@ -1,5 +1,6 @@
 module Set2 (mkSeed
             , queryGreek
+            , queryGreek2
             , greekDataA
             , greekDataB
             , MyMaybe(..)
@@ -56,3 +57,24 @@ queryGreek d s = case lookupMay s d of
           MyJust t  -> case maximumMay t of
               MyNothing -> MyNothing
               MyJust m  -> divMay (fromIntegral m) (fromIntegral h)
+
+chain :: (a -> MyMaybe b) -> MyMaybe a -> MyMaybe b
+chain _ MyNothing  = MyNothing
+chain f (MyJust a) =  f a
+
+link :: MyMaybe a -> (a -> MyMaybe b) -> MyMaybe b
+link = flip chain
+
+-- queryGreek2 :: GreekData -> String -> MyMaybe Double
+-- queryGreek2 d s = chain divMay
+--   where
+--     list  = lookupMay s d
+--     headList = chain headMay list
+--     maxTailList = chain maximumMay $ chain tailMay list
+
+-- man this was hard
+queryGreek2 :: GreekData -> String -> MyMaybe Double
+queryGreek2 d s =  lookupMay s d `link`
+  (\e -> tailMay e `link` maximumMay `link`
+         (\m -> headMay e `link`
+                (\h -> divMay (fromIntegral m) (fromIntegral h))))
